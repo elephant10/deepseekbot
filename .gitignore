@@ -5,7 +5,7 @@
 .env
 
 #test notebook
-test.ipynb
+test_book.ipynb
 
 # Python bytecode and caches
 __pycache__/
