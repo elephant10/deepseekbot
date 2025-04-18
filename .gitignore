@@ -4,6 +4,9 @@
 # Environment variables file
 .env
 
+#test notebook
+test.ipynb
+
 # Python bytecode and caches
 __pycache__/
 *.pyc
