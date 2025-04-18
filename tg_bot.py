@@ -2,6 +2,9 @@ import os
 from dotenv import load_dotenv 
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.constants import ParseMode
+from telegram.helpers import escape_markdown
+import deepseek_bot
 
 # Load environment variables
 load_dotenv()
@@ -9,11 +12,27 @@ API_TOKEN = os.environ.get("tg_bot_key")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /start is issued."""
-    await update.message.reply_text('Hello! I am your Telegram bot. How can I help you today?')
+    await update.message.reply_text('Hello! I am your Telegram deepseek bot. How can I help you today?')
 
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Echo the user message."""
-    await update.message.reply_text(update.message.text)
+
+    #to fix this!!!!!!!!
+    deepseek_for_user = create_ai(update.effective_user)
+
+    #doesn't work:
+    safe_text = escape_markdown(deepseek_for_user.chat(update.message.text), version=2)
+    await update.message.reply_text(safe_text, parse_mode=ParseMode.MARKDOWN_V2)
+                                   
+def get_user_key(user) -> str:
+    #expand logic
+    return os.environ.get("deepseek_key")
+
+def create_ai(user) -> None:
+    """Create an AI instance."""
+    ai_instance = deepseek_bot.Deepseek(get_user_key(user))
+    return ai_instance
+    
 
 def main() -> None:
     """Start the bot."""
@@ -26,6 +45,7 @@ def main() -> None:
 
     # Start polling
     application.run_polling()
+
 
 if __name__ == '__main__':
     main()
