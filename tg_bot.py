@@ -34,8 +34,13 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                              date=update.message.date.strftime("%Y-%m-%d %H:%M:%S")))
     while True:
         try:
-            answer = deepseek_for_user.chat(user.get_conversation())
+            response_from_model_object = deepseek_for_user.chat(user.get_conversation(), model=user.get_model())
+            answer = response_from_model_object.content
             escaped_answer = telegramify_markdown.markdownify(answer)
+            if user.get_model() == "deepseek-reasoner":
+                await update.message.reply_text("thought: \n" + \
+                                                 telegramify_markdown.markdownify(response_from_model_object.reasoning_content),
+                                                 parse_mode=ParseMode.MARKDOWN_V2)
             answer_message = await update.message.reply_text(escaped_answer, parse_mode=ParseMode.MARKDOWN_V2)
            
             user.add_message(Message(id= answer_message.message_id,
@@ -66,13 +71,24 @@ async def end(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def clean_history(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    
+   
     User.get_user_by_id(update.message.from_user.id, 
                         update.message.from_user.username).delete_conversation()
     await update.message.reply_text('The North remembers...')
     
-   
+
+async def start_think(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = User.get_user_by_id(update.message.from_user.id, update.message.from_user.username)
+    user.set_model("deepseek-reasoner")
+    await update.message.reply_text('I am ...')
+
+                           
+async def stop_think(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = User.get_user_by_id(update.message.from_user.id, update.message.from_user.username)
+    user.set_model("deepseek-chat")
+    await update.message.reply_text("Sho, Umniy?")
                                    
+
 def get_user_key(user) -> str:
     #expand logic
     return os.environ.get("deepseek_key")
@@ -91,16 +107,18 @@ def main() -> None:
     # Register handlers directly on the application
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("end", end))  # Add this line
-    application.add_handler(CommandHandler("forget", end))  # Add this line
+    application.add_handler(CommandHandler("forget", clean_history))  # Add this line
+    application.add_handler(CommandHandler("start_think", start_think))  # Add this line
+    application.add_handler(CommandHandler("stop_think", stop_think))  # Add this line
+
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
 
     #idk what this does, but for 'fraceful stop'
     
     print("Bot starting polling...")
     User.load_userlist()
-    for user in User.get_userlist():
-        print(user.get_conversation())
     application.run_polling()
+
     # This line should be reached if run_polling() exits gracefully
     print("application.run_polling() has returned. Script should now exit.") # Add this line
 

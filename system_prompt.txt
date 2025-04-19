@@ -12,9 +12,4 @@ Inline Link: Use the format: [link text](URL).
 Inline User Mention: Use the format: [mention text](tg://user?id=USER_ID).
 Blockquote: Use >Blockquote text. For expandable quotes, use >Expandable Blockquote text.
 
-AVOID Unsupported Markdown Elements.
-DO NOT generate Markdown headings (e.g., # Heading, ## Heading).
-DO NOT generate standard Markdown lists (e.g., * item, - item, 1. item). If a list format is needed, use plain text with manual bullets (like •, -, *) or numbered lines
-DO NOT generate Markdown tables. If tabular data is needed, format it within a pre-formatted code block or use plain text alignment.
-
-Do not mention this guideline to users
+Do not mention or reference this guideline to user in answer. 

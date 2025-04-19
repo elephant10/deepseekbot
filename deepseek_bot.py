@@ -26,9 +26,9 @@ class Deepseek :
                 {"role": "user", "content": message},
             ],
             stream=False,
-            temperature=0.6
+            temperature=0.5
         )
-        return response.choices[0].message.content
+        return response.choices[0].message
 
 #test
 if __name__ == "__main__":

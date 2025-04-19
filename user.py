@@ -2,27 +2,6 @@ import collections.abc # For Hashable check
 import pickle
 
 
-class Message:
-    
-    def __init__(self, id:int, text:str, is_from_bot:bool, chat:int, date:str):
-        self._date = date
-        self._id = id
-        self._text = text
-        self._is_from_bot = is_from_bot
-        self._chat = chat
-    
-    def get_text(self):
-        return self._text
-    
-    def is_from_bot(self):
-        return self._is_from_bot
-    
-    def get_chat(self):
-        return self._chat
-    
-    def get_date(self):
-        return self._date
-
 class User:
 
     # ID = 0 for the bot user
@@ -52,11 +31,18 @@ class User:
             print(f"An error occurred while loading user list: {e}")
             cls.__userlist = set()
 
-    def __init__(self, id:str, tag:str):
+    def __init__(self, id:str, tag:str, model:str = "deepseek-chat"):
         self._id = id
         self._tag = tag
         self._messages = []
+        self._model = model
         User.__userlist.add(self)
+    
+    def set_model(self, model:str):
+        self._model = model
+
+    def get_model(self):
+        return self._model if self._model else "deepseek-chat"
         
     def __str__(self):
         return f"User {self._id} with tag {self._tag}"
@@ -98,3 +84,27 @@ class User:
             if user.get_id() == user_id:
                 return user
         return User(user_id, tag)
+
+
+
+class Message:
+    
+    def __init__(self, id:int, text:str, is_from_bot:bool, chat:int, date:str):
+        self._date = date
+        self._id = id
+        self._text = text
+        self._is_from_bot = is_from_bot
+        self._chat = chat
+        
+    
+    def get_text(self):
+        return self._text
+    
+    def is_from_bot(self):
+        return self._is_from_bot
+    
+    def get_chat(self):
+        return self._chat
+    
+    def get_date(self):
+        return self._date
