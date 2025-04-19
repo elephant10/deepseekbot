@@ -7,6 +7,9 @@ from telegram.helpers import escape_markdown
 from telegram.error import BadRequest, TelegramError, NetworkError
 import deepseek_bot
 import telegramify_markdown
+import signal
+import asyncio
+import sys
 # Load environment variables
 load_dotenv()
 API_TOKEN = os.environ.get("tg_bot_key")
@@ -35,6 +38,17 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await update.message.reply_text("error. wait...")
             print(f"Network error: {e}")
             
+
+async def end(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    
+    await update.message.reply_text('bot stops working.')
+    
+    #asyncio.create_task(context.application.stop())
+    context.application.stop_running()
+    print("Stopping the bot...")
+    
+    #sys.exit(0)
+
                                    
 def get_user_key(user) -> str:
     #expand logic
@@ -53,10 +67,15 @@ def main() -> None:
 
     # Register handlers directly on the application
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("end", end))  # Add this line
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
 
-    # Start polling
+    #idk what this does, but for 'fraceful stop'
+    
+    print("Bot starting polling...")
     application.run_polling()
+    # This line should be reached if run_polling() exits gracefully
+    print("application.run_polling() has returned. Script should now exit.") # Add this line
 
 
 if __name__ == '__main__':
