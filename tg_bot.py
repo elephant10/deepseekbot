@@ -13,21 +13,18 @@ API_TOKEN = os.environ.get("tg_bot_key")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /start is issued."""
-    await update.message.reply_text(r'Hello\! *I am* your Telegram deepseek bot\. How can I help you today\?', parse_mode=ParseMode.MARKDOWN_V2)
+    await update.message.reply_text('Hello! I am your Telegram deepseek bot. How can I help you today?')
 
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Echo the user message."""
+    """tell user bot is working on it."""
     await update.message.reply_text('Processing your request...')
     #to fix this!!!!!!!!
     deepseek_for_user = create_ai(update.effective_user)
 
-    #doesn't work:
-    #safe_text = escape_markdown(answer, version=2)
     while True:
         try:
             answer = deepseek_for_user.chat(update.message.text)
             escaped_answer = telegramify_markdown.markdownify(answer)
-            print(f"answer: {answer}")
             await update.message.reply_text(escaped_answer, parse_mode=ParseMode.MARKDOWN_V2)
             break
         except BadRequest as e:
