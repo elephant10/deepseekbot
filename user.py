@@ -45,7 +45,7 @@ class User:
         return self._model if self._model else "deepseek-chat"
         
     def __str__(self):
-        return f"User {self._id} with tag {self._tag}"
+        return f"User {self._id}, with tag {self._tag} and {len(self._messages)} messages."
     
     def get_id(self):
         return self._id

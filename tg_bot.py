@@ -19,6 +19,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /start is issued."""
     User(update.message.from_user.id, update.message.from_user.username)
     await update.message.reply_text('Hello! I am your Telegram deepseek bot. How can I help you today?')
+    print(f"User {update.message.from_user.username} started the bot.")
+
 
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """tell user bot is working on it."""
@@ -27,7 +29,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     #to fix this!!!!!!!!
     deepseek_for_user = create_ai(update.effective_user)
     user = User.get_user_by_id(update.message.from_user.id, update.message.from_user.username)
-
+    print(f"User {user.get_tag()} sent a message with {len(update.message.text)} characters.")
     user.add_message(Message(id= update.message.message_id,
                              text=update.message.text,
                              is_from_bot=False,chat=update.message.chat.id,
@@ -42,7 +44,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                                                  telegramify_markdown.markdownify(response_from_model_object.reasoning_content),
                                                  parse_mode=ParseMode.MARKDOWN_V2)
             answer_message = await update.message.reply_text(escaped_answer, parse_mode=ParseMode.MARKDOWN_V2)
-           
+            print(f"user {user} got response")
             user.add_message(Message(id= answer_message.message_id,
                              text=answer_message.text,
                              is_from_bot=True,chat=update.message.chat.id,
@@ -62,30 +64,32 @@ async def end(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     
     await update.message.reply_text('bot stops working.')
     
-    #asyncio.create_task(context.application.stop())
     context.application.stop_running()
     print("Stopping the bot...")
+
     User.save_userlist()
     print("User list saved.")
-    #sys.exit(0)
 
 
 async def clean_history(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
    
     User.get_user_by_id(update.message.from_user.id, 
                         update.message.from_user.username).delete_conversation()
+    print(f"User {update.message.from_user.username} deleted their conversation history.")
     await update.message.reply_text('The North remembers...')
     
 
 async def start_think(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = User.get_user_by_id(update.message.from_user.id, update.message.from_user.username)
     user.set_model("deepseek-reasoner")
+    print(f"User {user} turned thinking.")
     await update.message.reply_text('I am ...')
 
                            
 async def stop_think(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = User.get_user_by_id(update.message.from_user.id, update.message.from_user.username)
     user.set_model("deepseek-chat")
+    print(f"User {user} turned off thinking.")
     await update.message.reply_text("Sho, Umniy?")
                                    
 
@@ -113,14 +117,11 @@ def main() -> None:
 
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
 
-    #idk what this does, but for 'fraceful stop'
     
-    print("Bot starting polling...")
+    print("Bot starts")
     User.load_userlist()
+    print(f"User list loaded. {len(User.get_userlist())} users found.")
     application.run_polling()
-
-    # This line should be reached if run_polling() exits gracefully
-    print("application.run_polling() has returned. Script should now exit.") # Add this line
 
 
 if __name__ == '__main__':
