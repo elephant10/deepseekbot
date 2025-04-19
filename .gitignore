@@ -6,6 +6,7 @@
 
 #test notebook
 test_book.ipynb
+misc_tests.py
 
 # Python bytecode and caches
 __pycache__/

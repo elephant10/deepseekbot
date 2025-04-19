@@ -1,6 +1,28 @@
 import collections.abc # For Hashable check
 import pickle
 
+
+class Message:
+    
+    def __init__(self, id:int, text:str, is_from_bot:bool, chat:int, date:str):
+        self._date = date
+        self._id = id
+        self._text = text
+        self._is_from_bot = is_from_bot
+        self._chat = chat
+    
+    def get_text(self):
+        return self._text
+    
+    def is_from_bot(self):
+        return self._is_from_bot
+    
+    def get_chat(self):
+        return self._chat
+    
+    def get_date(self):
+        return self._date
+
 class User:
 
     # ID = 0 for the bot user
@@ -63,7 +85,7 @@ class User:
     def get_conversation(self):
         conversation = ""
         for msg in self._messages:
-            if msg.get_sender().get_id() == User.BOT_AS_USER_ID:
+            if msg.is_from_bot():
                 conversation += f"YOU: {msg.get_text()}\n"
             else:
                 conversation += f"USER: {msg.get_text()}\n"
@@ -76,24 +98,3 @@ class User:
             if user.get_id() == user_id:
                 return user
         return User(user_id, tag)
-
-class message:
-    
-    def __init__(self, id:int, text:str, sender:User, chat:User, date:str):
-        self._date = date
-        self._id = id
-        self._text = text
-        self._sender = sender
-        self._chat = chat
-    
-    def get_text(self):
-        return self._text
-    
-    def get_sender(self):
-        return self._sender
-    
-    def get_chat(self):
-        return self._chat
-    
-    def get_date(self):
-        return self._date
