@@ -13,10 +13,16 @@ class Deepseek :
         self.client = OpenAI(api_key=api_key, base_url=Deepseek.base_url)
 
     def chat(self, message: str, model:str="deepseek-chat"):
+        system_prompt = ""
+        with open(r"system_prompt.txt", "r") as f:
+                    system_prompt = f.read()
+                    
         response = self.client.chat.completions.create(
             model=model,
             messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "system", "content": 
+                   system_prompt
+               },
                 {"role": "user", "content": message},
             ],
             stream=False,
