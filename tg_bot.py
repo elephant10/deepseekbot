@@ -11,6 +11,7 @@ import signal
 import asyncio
 import sys
 import datetime
+import re
 # Load environment variables
 load_dotenv()
 API_TOKEN = os.environ.get("tg_bot_key")
@@ -49,15 +50,23 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 for chunk in think_split:
                     await update.message.reply_text(
                         telegramify_markdown.markdownify( 
-                            (f"thought for {time_think} seconds:\n" if think_split.index(chunk) == 0 else "") + chunk),
+                            (f"*thought* for {time_think} seconds:\n" if think_split.index(chunk) == 0 else "") +  chunk),
                                                  parse_mode=ParseMode.MARKDOWN_V2)
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(0.5)
 
-            #instrucion in systtem prompt to split with this line
-            for chunk in answer.split("________________"):
+                await asyncio.sleep(2)
+
+            #instrucion in systtem prompt to split with this line. But sometimes it makes it shorter --\__o__/--
+          
+            for chunk in re.split(r"_{4,}", answer):
+                #if chunk is empty, skip it
+
+                if chunk.strip() == "":
+                    continue
+
                 escaped_answer = telegramify_markdown.markdownify(chunk)
                 answer_message = await update.message.reply_text(escaped_answer, parse_mode=ParseMode.MARKDOWN_V2)
-                await asyncio.sleep(0.5) # Add a small delay between messages
+                await asyncio.sleep(1) # Add a small delay between messages
 
             print(f"user {user} got response")
             user.add_message(Message(id= answer_message.message_id,
