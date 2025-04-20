@@ -26,7 +26,9 @@ class Deepseek :
                 {"role": "user", "content": message},
             ],
             stream=False,
-            temperature=2
+            temperature=2,
+            max_tokens=8192
+
         )
         return response.choices[0].message
 

@@ -10,6 +10,7 @@ import telegramify_markdown
 import signal
 import asyncio
 import sys
+import datetime
 # Load environment variables
 load_dotenv()
 API_TOKEN = os.environ.get("tg_bot_key")
@@ -38,15 +39,29 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         try:
             response_from_model_object = deepseek_for_user.chat(user.get_conversation(), model=user.get_model())
             answer = response_from_model_object.content
-            escaped_answer = telegramify_markdown.markdownify(answer)
+
+            
             if user.get_model() == "deepseek-reasoner":
-                await update.message.reply_text("thought: \n" + \
-                                                 telegramify_markdown.markdownify(response_from_model_object.reasoning_content),
+                #in case thoughts are bigger them telegram limit, split 
+
+                think_split = string_split(response_from_model_object.reasoning_content, 4096)
+                time_think = round((datetime.datetime.now(datetime.timezone.utc) - update.message.date).total_seconds())               
+                for chunk in think_split:
+                    await update.message.reply_text(
+                        telegramify_markdown.markdownify( 
+                            (f"thought for {time_think} seconds:\n" if think_split.index(chunk) == 0 else "") + chunk),
                                                  parse_mode=ParseMode.MARKDOWN_V2)
-            answer_message = await update.message.reply_text(escaped_answer, parse_mode=ParseMode.MARKDOWN_V2)
+                    await asyncio.sleep(1)
+
+            #instrucion in systtem prompt to split with this line
+            for chunk in answer.split("________________"):
+                escaped_answer = telegramify_markdown.markdownify(chunk)
+                answer_message = await update.message.reply_text(escaped_answer, parse_mode=ParseMode.MARKDOWN_V2)
+                await asyncio.sleep(0.5) # Add a small delay between messages
+
             print(f"user {user} got response")
             user.add_message(Message(id= answer_message.message_id,
-                             text=answer_message.text,
+                             text=answer,
                              is_from_bot=True,chat=update.message.chat.id,
                              date=answer_message.date.strftime("%Y-%m-%d %H:%M:%S")))
            
@@ -124,6 +139,10 @@ def main() -> None:
     User.load_userlist()
     print(f"User list loaded. {len(User.get_userlist())} users found.")
     application.run_polling()
+
+def string_split(str:str, n:int) -> list:
+        """Split a string into chunks of size n."""
+        return [str[i:i+n] for i in range(0, len(str), n)]
 
 
 if __name__ == '__main__':
