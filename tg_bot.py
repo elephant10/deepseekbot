@@ -61,7 +61,9 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             
 
 async def end(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    
+    if (str(update.message.from_user.id) not in os.environ.get("admins").split(",")):
+        print(f"User {update.message.from_user.username} tried ending the bot.")
+        return
     await update.message.reply_text('bot stops working.')
     
     context.application.stop_running()
