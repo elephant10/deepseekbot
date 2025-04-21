@@ -1,0 +1,1 @@
+pip install python-dotenv python-telegram-bot telegramify-markdown httpx openai python-telegram-bot[job-queue]
