@@ -12,6 +12,7 @@ import asyncio
 import sys
 import datetime
 import re
+import httpx
 # Load environment variables
 load_dotenv()
 API_TOKEN = os.environ.get("tg_bot_key")
@@ -45,13 +46,16 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             if user.get_model() == "deepseek-reasoner":
                 #in case thoughts are bigger them telegram limit, split 
 
-                think_split = string_split(response_from_model_object.reasoning_content, 4096)
+                think_split = string_split(response_from_model_object.reasoning_content, 4000)
                 time_think = round((datetime.datetime.now(datetime.timezone.utc) - update.message.date).total_seconds())               
                 for chunk in think_split:
                     await update.message.reply_text(
-                        telegramify_markdown.markdownify( 
-                            (f"*thought* for {time_think} seconds:\n" if think_split.index(chunk) == 0 else "") +  chunk),
+                      
+                            (f"*thought* for {time_think} seconds:\n" if think_split.index(chunk) == 0 else "") + "_"+  
+                            telegramify_markdown.escape_markdown(chunk) 
+                            + "_",
                                                  parse_mode=ParseMode.MARKDOWN_V2)
+                                                 
                     await asyncio.sleep(0.5)
 
                 await asyncio.sleep(2)
@@ -76,12 +80,12 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
            
             break
         except BadRequest as e:
-            await update.message.reply_text(e)
+            await update.message.reply_text("error. Retry")
             print(f"Error sending message: {e}")
             break
-        except NetworkError as e:
+        except (NetworkError, httpx.ConnectError) as e:
             await update.message.reply_text("error. wait...")
-            print(f"Network error: {e}")
+            print(f"Network error. Nema Ineta")
             
 
 async def end(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -128,6 +132,13 @@ def create_ai(user) -> None:
     ai_instance = deepseek_bot.Deepseek(get_user_key(user))
     return ai_instance
     
+async def autosave_callback(context: ContextTypes.DEFAULT_TYPE):
+    try:
+        await asyncio.to_thread(User.save_userlist)
+        print(f"Autosaved at {datetime.datetime.now()}")
+    except Exception as e:
+        print(f"Autosave failed: {e}")
+
 
 def main() -> None:
     """Start the bot."""
@@ -147,6 +158,13 @@ def main() -> None:
     print("Bot starts")
     User.load_userlist()
     print(f"User list loaded. {len(User.get_userlist())} users found.")
+
+    application.job_queue.run_repeating(
+        callback=autosave_callback,
+        interval=300,  # 5 minutes
+        first=120  # Save first after 120 seconds
+    )
+
     application.run_polling()
 
 def string_split(str:str, n:int) -> list:
