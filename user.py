@@ -76,6 +76,20 @@ class User:
             else:
                 conversation += f"USER: {msg.get_text()}\n"
         return conversation
+       
+    def get_conversation_for_bot(self):
+        list_of_messages = []
+        for msg in self._messages:
+            role = "assistant" if msg.is_from_bot() else "user"
+            content = msg.get_text()
+            
+            # Merge consecutive messages with the same role
+            if list_of_messages and list_of_messages[-1]["role"] == role:
+                list_of_messages[-1]["content"] += "\n new mesage: \n" + content
+            else:
+                list_of_messages.append({"role": role, "content": content})
+        
+        return list_of_messages
 
     @classmethod
     def get_user_by_id(cls,user_id, tag):

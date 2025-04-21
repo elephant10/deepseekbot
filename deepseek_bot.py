@@ -12,19 +12,16 @@ class Deepseek :
             raise ValueError("API key is required")
         self.client = OpenAI(api_key=api_key, base_url=Deepseek.base_url)
 
-    def chat(self, message: str, model:str="deepseek-chat"):
+    def chat(self, message: list, model:str="deepseek-chat"):
         system_prompt = ""
         with open(r"system_prompt.txt", "r") as f:
                     system_prompt = f.read()
-                    
+        
         response = self.client.chat.completions.create(
             model=model,
             messages=[
-                {"role": "system", "content": 
-                   system_prompt
-               },
-                {"role": "user", "content": message},
-            ],
+                {"role": "system", "content": system_prompt}] +
+                    message,
             stream=False,
             temperature=2,
             max_tokens=8192

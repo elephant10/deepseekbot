@@ -39,7 +39,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                              date=update.message.date.strftime("%Y-%m-%d %H:%M:%S")))
     while True:
         try:
-            response_from_model_object = deepseek_for_user.chat(user.get_conversation(), model=user.get_model())
+            response_from_model_object = deepseek_for_user.chat(user.get_conversation_for_bot(), model=user.get_model())
             answer = response_from_model_object.content
 
             
