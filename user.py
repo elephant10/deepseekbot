@@ -85,7 +85,8 @@ class User:
             
             # Merge consecutive messages with the same role
             if list_of_messages and list_of_messages[-1]["role"] == role:
-                list_of_messages[-1]["content"] += "\n new mesage: \n" + content
+                if list_of_messages[-1]["content"] != content: 
+                    list_of_messages[-1]["content"] += "\n new mesage: \n" + content
             else:
                 list_of_messages.append({"role": role, "content": content})
         
