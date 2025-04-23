@@ -37,9 +37,9 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                              text=update.message.text,
                              is_from_bot=False,chat=update.message.chat.id,
                              date=update.message.date.strftime("%Y-%m-%d %H:%M:%S")))
-    while True:
-        try:
-            response_from_model_object = deepseek_for_user.chat(user.get_conversation_for_bot(), model=user.get_model())
+    #while True:
+    try:
+            response_from_model_object = await deepseek_for_user.chat(user.get_conversation_for_bot(), model=user.get_model())
             answer = response_from_model_object.content
 
             
@@ -78,12 +78,12 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                              is_from_bot=True,chat=update.message.chat.id,
                              date=answer_message.date.strftime("%Y-%m-%d %H:%M:%S")))
            
-            break
-        except BadRequest as e:
+            #break
+    except BadRequest as e:
             await update.message.reply_text("error. Retry")
             print(f"Error sending message: {e}")
-            break
-        except (NetworkError, httpx.ConnectError) as e:
+            #break
+    except (NetworkError, httpx.ConnectError) as e:
             await update.message.reply_text("error. wait...")
             print(f"Network error. Nema Ineta")
             
@@ -143,7 +143,7 @@ async def autosave_callback(context: ContextTypes.DEFAULT_TYPE):
 def main() -> None:
     """Start the bot."""
     # Create Application instance
-    application = Application.builder().token(API_TOKEN).build()
+    application = Application.builder().token(API_TOKEN).concurrent_updates(True).build()
 
     # Register handlers directly on the application
     application.add_handler(CommandHandler("start", start))
