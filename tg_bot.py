@@ -62,7 +62,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
             #instrucion in systtem prompt to split with this line. But sometimes it makes it shorter --\__o__/--
           
-            for chunk in re.split(r"[\u002D\u005F\u2010-\u2015\u2043\u2E3A\u2E3B\uFE58\u301C\u3030\uFE4D\uFE49]{4,}", answer):
+            for chunk in re.split(r"[-_‒–—―⁃−⸺⸻〰﹘﹣－＿﹍﹎﹏]{4,}", answer):
                 #if chunk is empty, skip it
 
                 if chunk.strip() == "":
